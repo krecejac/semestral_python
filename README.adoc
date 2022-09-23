@@ -2,9 +2,9 @@
 
 == How to start
 
-. Clone this repository
+. Clone this repository -- `git clone git@gitlab.fit.cvut.cz:BI-PYT/B221/{yourlogin}.git`
 . Install link:https://conda.io/en/latest/miniconda.html[Miniconda]
-. In terminal (or conda prompt) go into cloned directory `cd bi-pyt`
+. In terminal (or conda prompt) go into cloned directory `cd {yourlogin}`
 . Install (or update) environment `conda env update`
 . Activate the environment `conda activate bipyt`
 . Run jupyter notebook `jupyter notebook`
