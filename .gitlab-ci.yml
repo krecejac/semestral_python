@@ -2,7 +2,7 @@
 #
 # Contents of this file are cryptographically signed and the signature is validated by CI.
 # Even a slight change will make the signature invalid and the CI pipelines will stop working for you.
-# If that happens you need to restore the original content of this file...
+# If that happens you need to restore the original content of this file.
 
 image: python-custom:latest
 
@@ -22,7 +22,7 @@ test-homework01:
   script:
     - cd homework01
     - "gitlab-runner-secrets verify-file-signatures test_*.py"
-    - sudo -u nobody pytest -c /etc/config/pytest.ini test_game_of_life.py
+    - sudo -u nobody pytest -c /etc/config/pytest.ini test_trees.py
   only:
     - homework01
 
@@ -31,7 +31,7 @@ test-homework01-private:
   tags:
     - bi-pyt-assignment-private
   script:
-    - sudo -u nobody pytest -c /etc/config/pytest.ini -v --tb=no --no-summary -rN test_game_of_life_private.py
+    - sudo -u nobody pytest -c /etc/config/pytest.ini -v --tb=no --no-summary -rN test_trees_private.py
   only:
     - homework01
   allow_failure: true
@@ -43,7 +43,7 @@ test-homework01-private:
 validate-homework01:
   stage: validate
   variables:
-    ASSIGNMENT_DEADLINE: "2022-03-20T23:59:59"
+    ASSIGNMENT_DEADLINE: "2022-10-30T23:59:59"
   tags:
     - bi-pyt-assignment-validate
   script:
@@ -85,7 +85,7 @@ test-homework02-private:
 validate-homework02:
   stage: validate
   variables:
-    ASSIGNMENT_DEADLINE: "2022-04-03T23:59:59"
+    ASSIGNMENT_DEADLINE: "2022-11-13T23:59:59"
   tags:
     - bi-pyt-assignment-validate
   script:
@@ -128,7 +128,7 @@ test-homework03-private:
 validate-homework03:
   stage: validate
   variables:
-    ASSIGNMENT_DEADLINE: "2022-04-24T23:59:59"
+    ASSIGNMENT_DEADLINE: "2022-11-27T23:59:59"
   tags:
     - bi-pyt-assignment-validate
   script:
@@ -171,7 +171,7 @@ test-homework04-private:
 validate-homework04:
   stage: validate
   variables:
-    ASSIGNMENT_DEADLINE: "2022-05-08T23:59:59"
+    ASSIGNMENT_DEADLINE: "2022-12-11T23:59:59"
   tags:
     - bi-pyt-assignment-validate
   script:
