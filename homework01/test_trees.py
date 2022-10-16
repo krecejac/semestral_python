@@ -70,7 +70,8 @@ def test_codestyle_score(linter, limit, runs=[]):
         for m in linter.reporter.messages:
             print(f'{m.msg_id} ({m.symbol}) line {m.line}: {m.msg}')
     runs.append(limit)
-    score = linter.stats['global_note']
+    # score = linter.stats['global_note']
+    score = linter.stats.global_note
 
     print(f'pylint score = {score} limit = {limit}')
     assert score >= limit
