@@ -3,9 +3,7 @@
 """
 Version 0.1
 
-Cílem je vykreslit v "UTF16-artu" strom definovaný listem hodnot. Každý uzel stromu obsahuje vždy dvě položky: název uzlu
-a seznam potomků (nemusí být nutně v tomto pořadí). Názvem může být jakýkoli objekt kromě typu list (seznam). Příklad
-triviálního stromu o 1 uzlu: [1, []]
+Cílem je vykreslit v "UTF16-artu" strom definovaný listem hodnot. Každý vnitřní uzel stromu obsahuje vždy dvě položky: název uzlu a seznam potomků (nemusí být nutně v tomto pořadí). Názvem může být jakýkoli objekt kromě typu list (seznam). Příklad triviálního stromu o 1 uzlu: [1, []]
 
 Strom bude vykreslen podle následujících pravidel:
     - Vykresluje se shora dolů, zleva doprava.
@@ -46,13 +44,14 @@ OUTPUT:
 ....└──>6.023e+23
 
 INPUT:
-[[[1, [[True, ['abc', 'def']], [False, [1, 2]]]], [2, [3.14159, 6.023e23]], [3, ['x', 'y']], [4, []]], 42]
+[[[1, [[True, ['abc', 'def']], [False, [1, 2]]]], [2, [3.14159, 6.023e23, 2.718281828]], [3, ['x', 'y']], [4, []]], 42]
 
 PARAMS:
     indent = 4
     separator = '.'
 
 OUTPUT:
+42
 ├──>1
 │...├──>True
 │...│...├──>abc
@@ -62,7 +61,8 @@ OUTPUT:
 │.......└──>2
 ├──>2
 │...├──>3.14159
-│...└──>6.023e+23
+│...├──>6.023e+23
+│...└──>2.718281828
 ├──>3
 │...├──>x
 │...└──>y
