@@ -22,7 +22,7 @@ test-homework01:
   script:
     - cd homework01
     - "gitlab-runner-secrets verify-file-signatures test_*.py"
-    - sudo -u nobody pytest -c /etc/config/pytest.ini test_trees.py
+    - sudo -u nobody pytest -c /etc/config/pytest.ini -s test_trees.py
   only:
     - homework01
 
@@ -186,3 +186,6 @@ validate-homework04:
 
 before_script:
   - pip install pytest pytest-timeout pylint>=2.13 numpy pillow ipython pandas matplotlib >/dev/null
+  - pytest --version
+  - pylint --version
+
