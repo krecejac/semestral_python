@@ -1,113 +1,129 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Version 0.1
+class Node:
+    def __init__(self):
+        self.name = str()
+        self.children = []
 
-Cílem je vykreslit v "UTF16-artu" strom definovaný listem hodnot. Každý uzel stromu obsahuje vždy dvě položky: název uzlu
-a seznam potomků (nemusí být nutně v tomto pořadí). Názvem může být jakýkoli objekt kromě typu list (seznam). Příklad
-triviálního stromu o 1 uzlu: [1, []]
+    def add_node_name(self, name):
+        self.name = name
 
-Strom bude vykreslen podle následujících pravidel:
-    - Vykresluje se shora dolů, zleva doprava.
-    - Uzel je reprezentován jménem, které je stringovou serializací objektu daného v definici uzlu.
-    - Uzel v hloubce N bude odsazen zlava o N×{indent} znaků, přičemž hodnota {indent} bude vždy kladné celé číslo > 1.
-    - Má-li uzel K potomků, povede:
-        - k 1. až K-1. uzlu šipka začínající znakem ├ (UTF16: 0x251C)
-        - ke K. uzlu šipka začínající znakem └ (UTF16: 0x2514)
-    - Šipka k potomku uzlu je vždy zakončena znakem > (UTF16: 0x003E; klasické "větší než").
-    - Celková délka šipky (včetně úvodního znaku a koncového ">") je vždy {indent}, výplňovým znakem je zopakovaný znak ─ (UTF16: 0x2500).
-    - Všichni potomci uzlu jsou spojeni na úrovni počátku šipek svislou čarou │ (UTF16: 0x2502); tedy tam, kde není jako úvodní znak ├ nebo └.
-    - Pokud název uzlu obsahuje znak `\n` neodsazujte nijak zbytek názvu po tomto znaku.
-    - Každý řádek je ukončen znakem `\n`.
+    def add_node_children(self, children):
+        self.children.append(children)
 
-Další požadavky na vypracovní:
-    - Pro nevalidní vstup musí implementace vyhodit výjimku `raise Exception('Invalid tree')`.
-    - Mít codestyle v souladu s PEP8 (můžete ignorovat požadavek na délku řádků - C0301 a používat v odůvodněných případech i jednopísmenné proměnné - C0103)
-        - otestujte si pomocí `pylint --disable=C0301,C0103 trees.py`
-    - Vystačit si s buildins metodami, tj. žádné importy dalších modulů.
+    def isLast(self, indent, parent_children: list) -> str:
+        for x in parent_children:
+            if self.name == x.name:
+                if x == parent_children[-1]:
+                    return "└" + ("─" * (indent-2)) + ">"
+                else:
+                    return "├" + ("─" * (indent-2)) + ">"
+
+    def addFill(self, indent, separator, lvl, pred=[]) -> str:
+        res = str()
+        if lvl > 1:
+            for x in range(lvl):
+                if x in pred:
+                    res += "│" + (indent-1)*separator
+                else:
+                    if x != 0:
+                        res += (indent)*separator
+        return res
 
 
-Příklady vstupu a výstupu:
-INPUT:
-[[[1, [True, ['abc', 'def']]], [2, [3.14159, 6.023e23]]], 42]
+def node_name(l: list) -> int:
+    if len(l) != 2:
+        raise Exception('Invalid tree')
+    if type(l[0]) == list:
+        return 1
+    else:
+        return 0
 
-PARAMS:
-    indent = 4
-    separator = '.'
 
-OUTPUT:
-42
-├──>1
-│...└──>True
-│.......├──>abc
-│.......└──>def
-└──>2
-....├──>3.14159
-....└──>6.023e+23
+def tree_correctness(l: list):
+    if len(l) != 2:
+        return False
+    return (type(l[0]) != list) != (type(l[1]) != list)
 
-INPUT:
-[[[1, [[True, ['abc', 'def']], [False, [1, 2]]]], [2, [3.14159, 6.023e23]], [3, ['x', 'y']], [4, []]], 42]
 
-PARAMS:
-    indent = 4
-    separator = '.'
+class TreeNode:
+    def __init__(self):
+        self.root = Node()
 
-OUTPUT:
-├──>1
-│...├──>True
-│...│...├──>abc
-│...│...└──>def
-│...└──>False
-│.......├──>1
-│.......└──>2
-├──>2
-│...├──>3.14159
-│...└──>6.023e+23
-├──>3
-│...├──>x
-│...└──>y
-└──>4
+    def build_tree(self, l: list, is_first=True):
+        node = Node()
+        node_index = node_name(l)
+        node.name = l[node_index]
+        children = l[1-node_index]
+        if type(children) != list:
+            raise Exception('Invalid tree')
+        if is_first:
+            is_first = False
+            self.root = node
+        if len(children) == 1 or len(children) > 2:
+            for child in children:
+                if type(child) == list:
+                    raise Exception('Invalid tree')
+                Hodor = Node()
+                Hodor.add_node_name(child)
+                node.add_node_children(Hodor)
+            return node
+        if len(children) == 2 and type(children[0]) != list and type(children[1]) != list:
+            for child in children:
+                Hodor = Node()
+                Hodor.add_node_name(child)
+                node.add_node_children(Hodor)
+            return node
+        else:
+            if tree_correctness(children):
+                children = [children]
+            for child in children:
+                node.add_node_children(self.build_tree(child, is_first))
+        return node
+    # └ ├ ─ │
 
-INPUT:
-[6, [[[[1, [2, 3]], [42, [-43, 44]]], 4], 5]]
-
-PARAMS:
-    indent = 2
-    separator = ' '
-
-OUTPUT:
-6
-└>5
-  └>4
-    ├>1
-    │ ├>2
-    │ └>3
-    └>42
-      ├>-43
-      └>44
-
-INPUT:
-[6, [5, ['dva\nradky']]]
-
-PARAMS:
-    indent = 2
-    separator = ' '
-
-OUTPUT:
-6
-└>5
-  └>dva
-radky
-
-Potřebné UTF16-art znaky:
-└ ├ ─ │
-
-Odkazy:
-https://en.wikipedia.org/wiki/Box_Drawing
-"""
+    def print_tree(self, indent, indent2, separator, father=None, node=None, pred=[]) -> str:
+        res = str()
+        final_str = str()
+        lvl = indent2//indent
+        pred_counter = []
+        if node != None and len(node.children) != 0:
+            final_str = node.isLast(indent, father.children)
+            if final_str == ("├" + ("─" * (indent-2)) + ">"):
+                pred_counter.append(lvl)
+                pred = pred_counter
+        if node == None:
+            node = self.root
+            res += str(node.name) + '\n'
+        if len(node.children) == 0:
+            if node != self.root:
+                final_str = node.isLast(indent, father.children)
+                before_str = node.addFill(indent, separator, lvl, pred)
+            return before_str + final_str + str(node.name) + "\n"
+        if node != self.root:
+            final_str = node.isLast(indent, father.children)
+            before_str = node.addFill(indent, separator, lvl, pred)
+            res += before_str + final_str + str(node.name) + "\n"
+        for child in node.children:
+            res += self.print_tree(indent, indent2 +
+                                   indent, separator, node, child, pred)
+        return res
 
 
 # zachovejte interface metody
 def render_tree(tree: list = None, indent: int = 2, separator: str = ' ') -> str:
+    t = TreeNode()
+    t.build_tree(tree)
+    res = (t.print_tree(indent, 0, separator, t.root))
+    return res
 
-    return ''
+
+l = [[[1, [True, ['abc', 'def']]], [2, [3.14159, 6.023e23]]], 42]
+r = [6, [5, ['dva\nradky']]]
+#r = [6, [[[[1, [2, 3]], [42, [-43, 44]]], 4], 5]]
+#q =  [[[1, [[True, ['abc', 'def']], [False, [1, 2]]]],
+#  [2, [3.14159, 6.023e23]], [3, ['x', 'y']], [4, []]], 42]
+#z = [6, [[[[1, [2, 3]], [42, [-43, 44]]], 4], 5]]
+joffrey_lannister = [1, 2, 3]
+render_tree(r, 2, " ")
+# s = render_tree(l, 2, " ")
