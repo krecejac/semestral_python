@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Napište funkci, která vyrobí v aktuální adresářy podadresáře, jejichž jména dostane jako argument.
+Napište funkci, která vyrobí v aktuálním adresáři podadresáře, jejichž jména dostane jako argument.
 """
 
 import os
