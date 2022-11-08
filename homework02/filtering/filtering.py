@@ -18,8 +18,7 @@ def count_it( image: np.array, kernel: np.array ) -> np.array:
     image_pad = np.pad(image, pad_width=padding)
     for row in range(image_shape[0]):
         for coll in range(image_shape[1]):
-            our_sum = np.clip(np.sum( image_pad[row: row + ker, coll: coll+ker] * kernel, dtype=np.float64), 0, 255)
-            new_image[row][coll] = our_sum
+            new_image[row][coll] = np.clip(np.sum( image_pad[row: row + ker, coll: coll+ker] * kernel, dtype=np.float64), 0, 255)
     return new_image.astype(np.uint8)
 
 def apply_filter(image: np.array, kernel: np.array) -> np.array:
@@ -36,14 +35,8 @@ def apply_filter(image: np.array, kernel: np.array) -> np.array:
     if image.ndim == 3:
         new_image = np.empty(image_shape)
         for i in range(3):
-            l = count_it( (image[:, :, i:i+1]).reshape( image_shape[0:2] ), kernel ).reshape( (512, 512, 1) )
-            new_image[:, :, i:i+1] = l
+            new_image[:, :, i:i+1] = count_it( (image[:, :, i:i+1]).reshape( image_shape[0:2] ), kernel ).reshape( image_shape[0:2] + (1,) )
         image = new_image
     else:
         image = count_it( image, kernel )
     return image.astype(np.uint8)
-#if __name__== "__main__":
-#    from helpers import *
-#    image = read_image('../tests/lenna.png')
-#    #image_gray = np.average(image.astype(np.float), weights=[0.299, 0.587, 0.114], axis=2).astype(np.uint8)
-#    s = apply_filter( image, identity_kernel)
