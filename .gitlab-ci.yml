@@ -14,7 +14,7 @@ stages:
   - test-private
   - validate
 
-
+########################################################################
 test-homework01:
   stage: test
   tags:
@@ -22,7 +22,7 @@ test-homework01:
   script:
     - cd homework01
     - "gitlab-runner-secrets verify-file-signatures test_*.py"
-    - sudo -u nobody pytest -c /etc/config/pytest.ini test_trees.py
+    - sudo -u nobody pytest -c /etc/config/pytest.ini -s test_trees.py
   only:
     - homework01
 
@@ -55,15 +55,15 @@ validate-homework01:
     - test-homework01-private
   coverage: '/PASSED_PERCENT=\d+.\d+\%/'
 
-
+########################################################################
 test-homework02:
   stage: test
   tags:
     - bi-pyt-assignment
   script:
     - cd homework02
-    - "gitlab-runner-secrets verify-file-signatures test_*.py"
-    - sudo -u nobody pytest -c /etc/config/pytest.ini test_space_motion.py
+    - "gitlab-runner-secrets verify-file-signatures tests/*.py tests/*.png"
+    - sudo -u nobody pytest -c /etc/config/pytest.ini tests/test_filtering.py
   only:
     - homework02
 
@@ -72,7 +72,8 @@ test-homework02-private:
   tags:
     - bi-pyt-assignment-private
   script:
-    - sudo -u nobody pytest -c /etc/config/pytest.ini -v --tb=no --no-summary -rN test_space_motion_private.py
+    - "gitlab-runner-secrets verify-file-signatures tests/*.png"
+    - sudo -u nobody pytest -c /etc/config/pytest.ini -v --tb=no --no-summary -rN tests/test_filtering_private.py
     - sleep 10
   only:
     - homework02
@@ -95,17 +96,17 @@ validate-homework02:
     - homework02
   dependencies:
     - test-homework02-private
-  coverage: '/PASSED_PERCENT=\d+.\d+\%/'
-    
+  coverage: '/PASSED_PERCENT=\d+.\d+\%/'   
 
+########################################################################
 test-homework03:
   stage: test
   tags:
     - bi-pyt-assignment
   script:
     - cd homework03
-    - "gitlab-runner-secrets verify-file-signatures tests/*.py tests/*.png"
-    - sudo -u nobody pytest -c /etc/config/pytest.ini tests/test_filtering.py
+    - "gitlab-runner-secrets verify-file-signatures test_*.py reference_out/*.json reference_out/*.npy test_images/*.jpg test_images/*.jpeg"
+    - sudo -u nobody pytest -c /etc/config/pytest.ini test_orb.py
   only:
     - homework03
 
@@ -114,8 +115,7 @@ test-homework03-private:
   tags:
     - bi-pyt-assignment-private
   script:
-    - "gitlab-runner-secrets verify-file-signatures tests/*.png"
-    - sudo -u nobody pytest -c /etc/config/pytest.ini -v --tb=no --no-summary -rN tests/test_filtering_private.py
+    - sudo -u nobody pytest -c /etc/config/pytest.ini -v --tb=no --no-summary -rN test_orb_private.py
     - sleep 10
   only:
     - homework03
@@ -140,7 +140,7 @@ validate-homework03:
     - test-homework03-private
   coverage: '/PASSED_PERCENT=\d+.\d+\%/'
 
-
+########################################################################
 test-homework04:
   stage: test
   tags:
@@ -183,6 +183,9 @@ validate-homework04:
     - test-homework04-private
   coverage: '/PASSED_PERCENT=\d+.\d+\%/'
 
-
+########################################################################
 before_script:
   - pip install pytest pytest-timeout pylint>=2.13 numpy pillow ipython pandas matplotlib >/dev/null
+  - pytest --version
+  - pylint --version
+

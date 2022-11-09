@@ -11,10 +11,7 @@ class Node:
         self.children = []
         self.pred = []
 
-    # zachovejte interface metody
-    def add_node_name(self, name):
-        """blabla"""
-        self.name = name
+Cílem je vykreslit v "UTF16-artu" strom definovaný listem hodnot. Každý vnitřní uzel stromu obsahuje vždy dvě položky: název uzlu a seznam potomků (nemusí být nutně v tomto pořadí). Názvem může být jakýkoli objekt kromě typu list (seznam). Příklad triviálního stromu o 1 uzlu: [1, []]
 
     # zachovejte interface metody
     def add_node_children(self, children):
@@ -69,29 +66,30 @@ def tree_correctness(l: list):
         return False
     return ( not isinstance(l[0], list) ) != ( not isinstance(l[1], list) )
 
-def childNotEven(children: list):
-    """blabla"""
-    return (not isinstance(children[0], list)) and (not isinstance(children[1], list))
+INPUT:
+[[[1, [[True, ['abc', 'def']], [False, [1, 2]]]], [2, [3.14159, 6.023e23, 2.718281828]], [3, ['x', 'y']], [4, []]], 42]
 
 def allchildNotList(children: list):
     """blabla"""
     return isinstance(children[0], list) and all(isinstance(child, list) for child in children)
 
-def childNum(node, children: list):
-    """blabla"""
-    if len(children) == 1:
-        for child in children:
-            Hodor = Node()
-            Hodor.add_node_name(child)
-            node.add_node_children(Hodor)
-        return True
-    if len(children) == 2 and childNotEven(children):
-        for child in children:
-            Hodor = Node()
-            Hodor.add_node_name(child)
-            node.add_node_children(Hodor)
-        return True
-    return False
+OUTPUT:
+42
+├──>1
+│...├──>True
+│...│...├──>abc
+│...│...└──>def
+│...└──>False
+│.......├──>1
+│.......└──>2
+├──>2
+│...├──>3.14159
+│...├──>6.023e+23
+│...└──>2.718281828
+├──>3
+│...├──>x
+│...└──>y
+└──>4
 
 class TreeNode:
     """blabla"""
