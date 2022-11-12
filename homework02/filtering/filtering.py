@@ -12,14 +12,14 @@ def count_it( image: np.array, kernel: np.array ) -> np.array:
     """main function for filter"""
     kernel_shape = np.shape(kernel)
     image_shape = np.shape(image)
-    new_image = np.zeros(shape=(image_shape), dtype=np.float64)
+    new_image = np.zeros_like(image, dtype=np.float64)
     padding = kernel_shape[0]//2
     ker = kernel_shape[0]
     image_pad = np.pad(image, pad_width=padding)
     for row in range(image_shape[0]):
         for coll in range(image_shape[1]):
-            new_image[row][coll] = np.clip(np.sum( image_pad[row: row + ker, coll: coll+ker] * kernel, dtype=np.float64), 0, 255)
-    return new_image.astype(np.uint8)
+            new_image[row, coll] = np.sum( image_pad[row: row + ker, coll: coll+ker] * kernel, dtype=np.float64)
+    return np.clip(new_image, 0, 255)
 
 def apply_filter(image: np.array, kernel: np.array) -> np.array:
     """ Apply given filter on image """
@@ -30,8 +30,8 @@ def apply_filter(image: np.array, kernel: np.array) -> np.array:
     assert kernel.shape[0] == kernel.shape[1]
     kernel = check_kernel(kernel)
     image_shape = image.shape
-    kernel.astype(np.float64)
-    image.astype(np.float64)
+    kernel.astype(np.float64, copy=False)
+    image.astype(np.float64, copy=False)
     if image.ndim == 3:
         new_image = np.empty(image_shape)
         for i in range(3):
@@ -39,4 +39,4 @@ def apply_filter(image: np.array, kernel: np.array) -> np.array:
         image = new_image
     else:
         image = count_it( image, kernel )
-    return image.astype(np.uint8)
+    return image.astype(np.uint8,copy=False)
