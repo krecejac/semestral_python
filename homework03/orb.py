@@ -39,6 +39,7 @@ def create_pyramid(
     return pyr
 
 
+# not necessary to implement, see README
 def get_first_test_mask(
     img_level: np.ndarray, threshold: int, border: int
 ) -> np.ndarray:
@@ -63,7 +64,7 @@ def get_first_test_mask(
     mask = ...
     return mask
 
-
+# not necessary to implement, see README
 def get_second_test_mask(
     img_level: np.ndarray,
     first_test_mask: np.ndarray,

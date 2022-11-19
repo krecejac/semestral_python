@@ -128,7 +128,7 @@ test-homework03-private:
 validate-homework03:
   stage: validate
   variables:
-    ASSIGNMENT_DEADLINE: "2022-11-27T23:59:59"
+    ASSIGNMENT_DEADLINE: "2022-12-04T23:59:59"
   tags:
     - bi-pyt-assignment-validate
   script:

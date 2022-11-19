@@ -1,18 +1,17 @@
 import math
-
 import cv2
 import pytest
 import numpy as np
-from scipy.signal import convolve2d
-from scipy.spatial.distance import cdist
+# from scipy.signal import convolve2d
+# from scipy.spatial.distance import cdist
 from pathlib import Path
-from utils import apply_gaussian_2d
+# from utils import apply_gaussian_2d
 import orb
-
-
 import inspect
 from pylint.lint import Run
 from pylint.reporters import CollectingReporter
+
+REF_PATH = Path(__file__).parent / "reference_out"
 
 
 @pytest.fixture
@@ -76,62 +75,140 @@ def test_create_pyramid(input_image, n_pyr_layers, downscale_factor):
         assert abs(out_shape[1] - pyr[i].shape[1]) <= 2
         img = cv2.resize(img, pyr[i].shape[::-1])
         pixels_ok = np.isclose(
-            img.astype(np.uint8), 
-            pyr[i].astype(np.uint8), 
+            img.astype(np.uint8),
+            pyr[i].astype(np.uint8),
             atol=5
         ).sum()
         if (pixels_ok / pixels_total) < 0.9:
             img = cv2.resize(img0, pyr[i].shape[::-1])
             pixels_ok = np.isclose(
-                img.astype(np.uint8), 
-                pyr[i].astype(np.uint8), 
+                img.astype(np.uint8),
+                pyr[i].astype(np.uint8),
                 atol=5
             ).sum()
         assert (pixels_ok / pixels_total) >= 0.9
 
 
-@pytest.mark.parametrize(
-    "threshold,border", [[5, 0], [5, 10], [10, 0], [10, 20], [20, 0], [20, 20]]
-)
-def test_get_first_test_mask(input_image, threshold, border):
-    _, img = input_image
-    border = max(border, orb.FAST_CIRCLE_RADIUS)
-    mask = orb.get_first_test_mask(img.astype(int), threshold, border)
-    assert isinstance(mask, np.ndarray)
-    assert mask.shape == img.shape
-    assert mask[:border, :].sum() == 0
-    assert mask[:, :border].sum() == 0
-    assert mask[-border:, :].sum() == 0
-    assert mask[:, -border:].sum() == 0
+# Let student to solve detect_keypoints without helper mask arrays.
+# @pytest.mark.parametrize(
+#     "threshold,border", [[5, 0], [5, 10], [10, 0], [10, 20], [20, 0], [20, 20]]
+# )
+# def test_get_first_test_mask(input_image, threshold, border):
+#     img_base, img = input_image
+#     border = max(border, orb.FAST_CIRCLE_RADIUS)
+#     mask = orb.get_first_test_mask(img.astype(int), threshold, border)
+#     assert isinstance(mask, np.ndarray)
+#     assert mask.shape == img.shape
+#     assert mask[:border, :].sum() == 0
+#     assert mask[:, :border].sum() == 0
+#     assert mask[-border:, :].sum() == 0
+#     assert mask[:, -border:].sum() == 0
+#     mask_ref = np.load(REF_PATH / f"{img_base}_{threshold}_{border}_get_first_test_mask.npz")['mask_ref']
+#     x, y = img.shape
+#     assert (
+#         np.equal(mask, mask_ref).sum() / x / y > 0.98
+#     )  # might depend on dtype whether it is passed as int or np.uint8
+
+
+# Let student to solve detect_keypoints without helper mask arrays.
+# @pytest.mark.parametrize(
+#     "threshold,border", [[5, 0], [5, 10], [10, 0], [10, 20], [20, 0], [20, 20]]
+# )
+# def test_get_second_test_mask(input_image, threshold, border):
+#     img_base, img = input_image
+#     border = max(border, orb.FAST_CIRCLE_RADIUS)
+#     mask1 = orb.get_first_test_mask(img.astype(int), threshold, border)
+#     mask = orb.get_second_test_mask(img.astype(int), mask1, threshold)
+#     assert isinstance(mask, np.ndarray)
+#     assert mask.shape == img.shape
+#     assert mask[:border, :].sum() == 0
+#     assert mask[:, :border].sum() == 0
+#     assert mask[-border:, :].sum() == 0
+#     assert mask[:, -border:].sum() == 0
+#     mask_ref = np.load(REF_PATH / f"{img_base}_{threshold}_{border}_get_second_test_mask.npz")['mask_ref']
+#     x, y = img.shape
+#     assert (
+#         np.equal(mask, mask_ref).sum() / x / y > 0.98
+#     )  # might depend on dtype whether it is passed as int or np.uint8
 
 
 @pytest.mark.parametrize(
-    "threshold,border", [[30, 50],[20, 20]]
+    "threshold,border", [[20, 20]]
 )
 def test_calculate_kp_scores(input_image, threshold, border):
-    img = input_image[1].astype(int)
+    img_base, img = input_image
+    img = img.astype(int)
     border = max(border, orb.FAST_CIRCLE_RADIUS)
-    keypoints, scores = orb.detect_keypoints(img, threshold, border)
+    first_test_mask = np.load(REF_PATH / f"{img_base}_{threshold}_{border}_get_first_test_mask.npz")['mask_ref']
+    second_test_mask = np.load(REF_PATH / f"{img_base}_{threshold}_{border}_get_second_test_mask_indices.npz")['mask_ref']
+    first_test_passed_r, first_test_passed_c = np.where(first_test_mask)
+    keypoints = list(
+        zip(
+            first_test_passed_r[second_test_mask], first_test_passed_c[second_test_mask]
+        )
+    )
+    scores = orb.calculate_kp_scores(img, keypoints)
     assert isinstance(scores, list)
     assert all([isinstance(score, int) for score in scores])
+    scores_ref = (
+        np.load(REF_PATH / f"{img_base}_{threshold}_{border}_calculate_kp_scores.npz")['scores_ref']
+        .squeeze()
+        .tolist()
+    )
+    assert scores == scores_ref
 
 
 @pytest.mark.parametrize(
-    "threshold,border", [[5, 20], [20, 20]]
+    "threshold,border", [[20, 0], [20, 20]]
 )
 def test_detect_keypoints(input_image, threshold, border):
-    keypoints, _ = orb.detect_keypoints(input_image[1], threshold, border)
+    img_base, img = input_image
+    border = max(border, orb.FAST_CIRCLE_RADIUS)
+    keypoints, scores = orb.detect_keypoints(img, threshold, border)
+    keypoints_ref = np.load(REF_PATH / f"{img_base}_{threshold}_{border}_detect_keypoints_1.npz")['keypoints_ref']
+    scores_ref = np.load(REF_PATH / f"{img_base}_{threshold}_{border}_detect_keypoints_2.npz")['scores_ref']
     assert isinstance(keypoints, list)
+    assert len(keypoints) == len(keypoints_ref)
+    assert len(keypoints) == len(scores)
+    keypoints, keypoints_ref = np.asarray(keypoints), np.asarray(keypoints_ref)
+    scores, scores_ref = np.asarray(scores), np.asarray(scores_ref)
+    ind = np.lexsort((keypoints[:, 0], keypoints[:, 1]))
+    keypoints, scores = keypoints[ind, :], scores[ind]
+    ind_ref = np.lexsort((keypoints_ref[:, 0], keypoints_ref[:, 1]))
+    keypoints_ref, scores_ref = keypoints_ref[ind_ref, :], scores_ref[ind]
+    assert np.array_equal(keypoints, keypoints_ref)
+    assert np.array_equal(scores, scores_ref)
 
 
 def test_get_x_derivative(input_image):
-    result = orb.get_x_derivative(input_image[1])
-    assert input_image[1].shape == result.shape
+    img_base, img = input_image
+    # compare as float16 for save space of reference array
+    result = orb.get_x_derivative(img).astype(np.float16)
+    assert isinstance(result, np.ndarray)
+    assert result.shape == img.shape
+    result_ref = np.load(REF_PATH / f"{img_base}_get_x_derivative.npz")['result_ref']
+    assert np.allclose(result, result_ref)
 
 
 def test_get_y_derivative(input_image):
-    result = orb.get_x_derivative(input_image[1])
-    assert input_image[1].shape == result.shape
+    img_base, img = input_image
+    # compare as float16 for save space of reference array
+    result = orb.get_y_derivative(img).astype(np.float16)
+    assert isinstance(result, np.ndarray)
+    assert result.shape == img.shape
+    result_ref = np.load(REF_PATH / f"{img_base}_get_y_derivative.npz")['result_ref']
+    assert np.allclose(result, result_ref)
+
+
+def test_get_harris_response(input_image):
+    img_base, img = input_image
+    # compare as float16 for save space of reference array
+    response = orb.get_harris_response(img).astype(np.float16)
+    assert isinstance(response, np.ndarray)
+    assert response.shape == img.shape
+    response_ref = np.load(REF_PATH / f"{img_base}_get_harris_response.npz")['response_ref']
+    # np.savez_compressed(REF_PATH / f"{img_base}_get_harris_response.npz", response_ref=response_ref)
+    assert np.allclose(response, response_ref)
 
 
 @pytest.mark.parametrize(
@@ -139,11 +216,24 @@ def test_get_y_derivative(input_image):
     [
         [50, 20, 0],
         [100, 15, 10],
-        [150, 10, 0],
-        [250, 20, 10],
     ],
 )
 def test_filter_keypoints(input_image, n_max, threshold, border):
-    keypoints, _ = orb.detect_keypoints(input_image[1], threshold, border=border)
-    filtered_keypoints = orb.filter_keypoints(input_image[1], keypoints, n_max)
+    img_base, img = input_image
+    border = max(border, orb.FAST_CIRCLE_RADIUS)
+    keypoints_ref = np.load(REF_PATH / f"{img_base}_{threshold}_{border}_detect_keypoints_1.npz")['keypoints_ref']
+    scores_ref = np.load(REF_PATH / f"{img_base}_{threshold}_{border}_detect_keypoints_2.npz")['scores_ref']
+
+    idxs = np.argsort(scores_ref)[::-1]
+    keypoints_ref = np.asarray(keypoints_ref)[idxs][: 2 * n_max].tolist()
+    filtered_keypoints = orb.filter_keypoints(img, keypoints_ref, n_max)
     assert len(filtered_keypoints) <= n_max
+    filtered_keypoints = np.asarray(filtered_keypoints)
+    filtered_keypoints_ref = np.load(REF_PATH / f"{img_base}_{n_max}_{threshold}_{border}_filter_keypoints.npz")['filtered_keypoints_ref']
+    ind = np.lexsort((filtered_keypoints[:, 0], filtered_keypoints[:, 1]))
+    ind_ref = np.lexsort((filtered_keypoints_ref[:, 0], filtered_keypoints_ref[:, 1]))
+    filtered_keypoints, filtered_keypoints_ref = (
+        filtered_keypoints[ind, :],
+        filtered_keypoints_ref[ind_ref],
+    )
+    assert np.array_equal(filtered_keypoints, filtered_keypoints_ref)
