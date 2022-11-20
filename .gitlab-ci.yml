@@ -105,7 +105,7 @@ test-homework03:
     - bi-pyt-assignment
   script:
     - cd homework03
-    - "gitlab-runner-secrets verify-file-signatures test_*.py reference_out/*.json reference_out/*.npy test_images/*.jpg test_images/*.jpeg"
+    - "gitlab-runner-secrets verify-file-signatures test_*.py reference_out/*.npz test_images/*.jpg test_images/*.jpeg"
     - sudo -u nobody pytest -c /etc/config/pytest.ini test_orb.py
   only:
     - homework03
