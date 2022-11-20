@@ -185,7 +185,9 @@ validate-homework04:
 
 ########################################################################
 before_script:
-  - pip install pytest pytest-timeout pylint>=2.13 numpy pillow ipython pandas matplotlib opencv-python-headless >/dev/null
+  - pip install --upgrade pip >/dev/null
+  - pip install --upgrade numpy>=1.23.5 >/dev/null
+  - pip install pytest pytest-timeout pylint>=2.13 numpy pillow ipython pandas matplotlib opencv-python-headless
   - pytest --version
   - pylint --version
 
