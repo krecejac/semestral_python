@@ -1,3 +1,5 @@
 import gui.interface as interface
+from gui.interface import App
 
-interface.root.mainloop()
+app = App()
+app.root.mainloop()
