@@ -15,6 +15,7 @@ class Utils:
         self.custom = info['Custom']
         self.saving = info['Save']
         self.save_im = len([name for name in os.listdir('utils/images') if os.path.isfile('utils/images/'+ name)])
+        self.save_graph =  len([name for name in os.listdir('utils/graphs') if os.path.isfile('utils/graphs/'+ name)])
         self.curr_mode = info['Mode']
         self.SetMode()
     #TERRA = 0

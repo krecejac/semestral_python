@@ -72,6 +72,10 @@ def saveImage( image, utils ):
     utils.save_im += 1
     image.save(f"utils/images/{filename}", 'PNG')
 
+def saveGraph(utils):
+    filename = "utils/graphs/" + "graph" + str(utils.save_graph) + ".png"
+    plt.savefig(filename)
+
 def show_map( image_array, utils ):
     image = Image.fromarray(image_array)
     image.show()
@@ -82,12 +86,14 @@ def show_graph( map ):
     plt.imshow(map)
     plt.show()
 
-def show_3Dgraph( map:np.array ):
+def show_3Dgraph( map:np.array, utils ):
     xx, yy = np.mgrid[0:map.shape[0], 0:map.shape[1]]
-    fig = plt.figure(figsize=(100,100))
+    fig = plt.figure(figsize=(10,10))
     ax = fig.add_subplot(111,projection='3d')
     ax.plot_surface(xx, yy, map,rstride=1, cstride=1, cmap='viridis',
             linewidth=0)
+    if( utils.saving ):
+        saveGraph(utils)
     plt.show()
 
 def noise_create(choice):
@@ -108,6 +114,6 @@ def noise_create(choice):
             elevation[y][x] = e
             colour = color(e, m, utils.threshold, utils.curr_mode)
             im[y][x] = colour
-    if( utils.plot3d ):
-        show_3Dgraph(elevation )
     show_map(im, utils)
+    if( utils.plot3d ):
+        show_3Dgraph(elevation, utils)
