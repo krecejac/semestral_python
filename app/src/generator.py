@@ -3,6 +3,7 @@ import numpy as np
 from noise import pnoise2
 from PIL import Image
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import math
 import utils.var as var
 
@@ -41,13 +42,13 @@ def Mustafar(e):
     else: return var.Color.HIGH_MOUNTAIN
 
 def color(e, m, threshold, mode):
-    if mode == "KAMINO": return Kamino(e)
-    if mode == "MUSTAFAR": return Mustafar(e)
+    if mode == "Kamino": return Kamino(e)
+    if mode == "Mustafar": return Mustafar(e)
     if e <= 0.6: return var.Color.DEEP_OCEAN
     if e <= 0.65: return var.Color.OCEAN
     if e <= 0.68:
         if m < 0.6+threshold: return var.Color.BEACH
-        elif mode == "HOTH": return var.Color.ICE
+        elif mode == "Hoth": return var.Color.ICE
         else: return var.Color.SWAMP
 
     if e > 0.75:
@@ -56,28 +57,43 @@ def color(e, m, threshold, mode):
         else: return var.Color.SNOW
 
     if e <= 0.75:
-        if mode == "DAGOBAH": return Dagobah(m)
-        if mode == "TATOOINE": return Tatooine(m)
-        if mode == "HOTH": return Hoth(m)
-        if mode == "KASHYYYK": return Kashyyyk(m)
+        if mode == "Dagobah": return Dagobah(m)
+        if mode == "Tatooine": return Tatooine(m)
+        if mode == "Hoth": return Hoth(m)
+        if mode == "Kashyyyk": return Kashyyyk(m)
         if m < 0.3: return var.Color.DESERT
         if m < 0.4: return var.Color.SAWANNA
         if m < 0.5: return var.Color.LAND
         if m < 0.6: return var.Color.FOREST
         else: return var.Color.JUNGLE
 
-def show_map( image_array ):
+def saveImage( image, utils ):
+    filename = utils.curr_mode.lower() + str(utils.save_im) + ".png"
+    utils.save_im += 1
+    image.save(f"utils/images/{filename}", 'PNG')
+
+def show_map( image_array, utils ):
     image = Image.fromarray(image_array)
     image.show()
+    if( utils.saving ):
+        saveImage(image, utils)
 
 def show_graph( map ):
     plt.imshow(map)
     plt.show()
 
+def show_3Dgraph( map:np.array ):
+    xx, yy = np.mgrid[0:map.shape[0], 0:map.shape[1]]
+    fig = plt.figure(figsize=(100,100))
+    ax = fig.add_subplot(111,projection='3d')
+    ax.plot_surface(xx, yy, map,rstride=1, cstride=1, cmap='viridis',
+            linewidth=0)
+    plt.show()
+
 def noise_create(choice):
     utils = var.Utils(choice)
-    mode = var.Mode(utils, choice['Mode'])
     im = np.zeros(shape=(utils.shape_im[0], utils.shape_im[1],3), dtype=np.uint8)
+    elevation = np.zeros(shape=(utils.shape_im[0], utils.shape_im[1]))
     seed = random.randint(0,100)
     seed_moisture = seed-1 if seed != 0 else 1
     for y in range(utils.height):
@@ -89,6 +105,9 @@ def noise_create(choice):
             e = (e + (1-d)) / 2
             e = ( e - utils.min_val)/(utils.max_val-utils.min_val)
             m = ( m - utils.min_val)/(utils.max_val-utils.min_val)
-            colour = color(e, m, utils.threshold, mode.curr_mode)
-            im[y][x][0] = colour[0]; im[y][x][1] = colour[1]; im[y][x][2] = colour[2]
-    show_map(im)
+            elevation[y][x] = e
+            colour = color(e, m, utils.threshold, utils.curr_mode)
+            im[y][x] = colour
+    if( utils.plot3d ):
+        show_3Dgraph(elevation )
+    show_map(im, utils)

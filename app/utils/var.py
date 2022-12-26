@@ -1,4 +1,5 @@
 import math
+import os, os.path
 class Utils:
     def __init__(self, info):
         self.width = info['Width']
@@ -10,7 +11,30 @@ class Utils:
         self.threshold = 0
         self.persistence = info['Persistence'] #IMPORTANT
         self.lacunarity = info['Lacunarity']
-
+        self.plot3d = info['Print3d']
+        self.custom = info['Custom']
+        self.saving = info['Save']
+        self.save_im = len([name for name in os.listdir('utils/images') if os.path.isfile('utils/images/'+ name)])
+        self.curr_mode = info['Mode']
+        self.SetMode()
+    #TERRA = 0
+    #DAGOBAH = 1
+    #TATOOINE = 2
+    #HOTH = 3
+    #KASHYYYK = 4
+    #KAMINO = 5
+    #MUSTAFAR = 6
+    def SetMode(self):
+        if self.curr_mode == "Terra": # NORMAL
+            self.threshold = 0
+        elif self.curr_mode == "Dagobah": # DAGOBAH
+            self.threshold = -0.3
+        elif self.curr_mode == "Tatooine": # TATOOINE
+            self.threshold = 0.4
+        elif self.curr_mode == "Hoth": # HOTH
+            self.threshold = -0.4
+        elif self.curr_mode == "Kashyyyk": # KASHYYYK
+            self.threshold = -0.1
 class Color:
     DEEP_OCEAN = (94, 129, 172)
     OCEAN = (115, 146, 183)
@@ -30,23 +54,3 @@ class Color:
     LAVA = (207, 16, 32)
     MAGMA = (161,36,36)
     BARREN = (62, 67, 68)
-class Mode:
-    #TERRA = 0
-    #DAGOBAH = 1
-    #TATOOINE = 2
-    #HOTH = 3
-    #KASHYYYK = 4
-    #KAMINO = 5
-    #MUSTAFAR = 6
-    def __init__(self, utils:Utils, mode_curr):
-        self.curr_mode = mode_curr.upper()
-        if self.curr_mode == "TERRA": # NORMAL
-            utils.threshold = 0
-        elif self.curr_mode == "DAGOBAH": # DAGOBAH
-            utils.threshold = -0.3
-        elif self.curr_mode == "TATOOINE": # TATOOINE
-            utils.threshold = 0.4
-        elif self.curr_mode == "HOTH": # HOTH
-            utils.threshold = -0.4
-        elif self.curr_mode == "KASHYYYK": # KASHYYYK
-            utils.threshold = -0.1

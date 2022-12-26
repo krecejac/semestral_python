@@ -15,7 +15,10 @@ class App:
         "Height": int(self.height_entry.get()),
         "Octaves": self.slider_octav.get(),
         "Persistence": self.slider_persi.get(),
-        "Lacunarity": self.slider_lacun.get()
+        "Lacunarity": self.slider_lacun.get(),
+        "Print3d": self.noise_3d.get(),
+        'Custom': self.custom_noise.get(),
+        'Save': self.save_images.get()
     } 
         generator.noise_create(util_d)
 
@@ -24,7 +27,7 @@ class App:
     
     def Update_lac(self, input):
         self.var_lacun_str.set( round(input,2) )
-    
+
     def __init__(self):
         data=("Terra", "Dagobah", "Tatooine", "Hoth", "Kashyyyk", "Kamino", "Mustafar")
         #frames&windows
