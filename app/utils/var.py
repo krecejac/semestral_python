@@ -1,5 +1,6 @@
 import math
 import os, os.path
+import random
 class Utils:
     def __init__(self, info):
         self.width = info['Width']
@@ -18,6 +19,7 @@ class Utils:
         self.save_graph =  len([name for name in os.listdir('utils/graphs') if os.path.isfile('utils/graphs/'+ name)])
         self.curr_mode = info['Mode']
         self.SetMode()
+        self.MakePermutation()
     #TERRA = 0
     #DAGOBAH = 1
     #TATOOINE = 2
@@ -36,6 +38,18 @@ class Utils:
             self.threshold = -0.4
         elif self.curr_mode == "Kashyyyk": # KASHYYYK
             self.threshold = -0.1
+
+    def MakePermutation(self):
+        self.seed = random.randint(0,100)
+        self.seed_moisture = self.seed-1 if self.seed != 0 else 1
+        self.permutation = []
+        for i in range(256):
+            self.permutation.append(i)
+
+        random.shuffle(self.permutation)
+        for i in range(256):
+            self.permutation.append(self.permutation[i])
+        return self.permutation
 class Color:
     DEEP_OCEAN = (94, 129, 172)
     OCEAN = (115, 146, 183)

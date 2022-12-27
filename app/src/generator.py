@@ -1,9 +1,7 @@
-import random
 import numpy as np
 from noise import pnoise2
 from PIL import Image
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import math
 import utils.var as var
 
@@ -41,7 +39,7 @@ def Mustafar(e):
     if e <= 0.74: return var.Color.BARREN
     else: return var.Color.HIGH_MOUNTAIN
 
-def color(e, m, threshold, mode):
+def assignTerrain(e, m, threshold, mode):
     if mode == "Kamino": return Kamino(e)
     if mode == "Mustafar": return Mustafar(e)
     if e <= 0.6: return var.Color.DEEP_OCEAN
@@ -66,6 +64,59 @@ def color(e, m, threshold, mode):
         if m < 0.5: return var.Color.LAND
         if m < 0.6: return var.Color.FOREST
         else: return var.Color.JUNGLE
+class Vector2:
+	def __init__(self, x, y):
+		self.x = x
+		self.y = y
+	def dot(self, other):
+		return self.x*other.x + self.y*other.y
+
+def GetConstantVector(v):
+	h = v & 3
+	if(h == 0):
+		return Vector2(1.0, 1.0)
+	elif(h == 1):
+		return Vector2(-1.0, 1.0)
+	elif(h == 2):
+		return Vector2(-1.0, -1.0)
+	else:
+		return Vector2(1.0, -1.0)
+
+def Fade(t):
+	return ((6*t - 15)*t + 10)*t*t*t
+
+def Lerp(t, a1, a2):
+	return a1 + t*(a2-a1)
+
+def noiseRandom(x, y, permutation):
+	X = math.floor(x) & 255
+	Y = math.floor(y) & 255
+
+	xf = x-math.floor(x)
+	yf = y-math.floor(y)
+
+	topRight = Vector2(xf-1.0, yf-1.0)
+	topLeft = Vector2(xf, yf-1.0)
+	bottomRight = Vector2(xf-1.0, yf)
+	bottomLeft = Vector2(xf, yf)
+	
+	valueTopRight = permutation[permutation[X+1]+Y+1]
+	valueTopLeft = permutation[permutation[X]+Y+1]
+	valueBottomRight = permutation[permutation[X+1]+Y]
+	valueBottomLeft = permutation[permutation[X]+Y]
+	
+	dotTopRight = topRight.dot(GetConstantVector(valueTopRight))
+	dotTopLeft = topLeft.dot(GetConstantVector(valueTopLeft))
+	dotBottomRight = bottomRight.dot(GetConstantVector(valueBottomRight))
+	dotBottomLeft = bottomLeft.dot(GetConstantVector(valueBottomLeft))
+	
+	u = Fade(xf)
+	v = Fade(yf)
+	
+	return Lerp(u,
+		Lerp(v, dotBottomLeft, dotTopLeft),
+		Lerp(v, dotBottomRight, dotTopRight)
+	)
 
 def saveImage( image, utils ):
     filename = utils.curr_mode.lower() + str(utils.save_im) + ".png"
@@ -76,44 +127,93 @@ def saveGraph(utils):
     filename = "utils/graphs/" + "graph" + str(utils.save_graph) + ".png"
     plt.savefig(filename)
 
-def show_map( image_array, utils ):
-    image = Image.fromarray(image_array)
-    image.show()
-    if( utils.saving ):
-        saveImage(image, utils)
-
-def show_graph( map ):
+def showGraph( map ):
     plt.imshow(map)
     plt.show()
 
-def show_3Dgraph( map:np.array, utils ):
-    xx, yy = np.mgrid[0:map.shape[0], 0:map.shape[1]]
-    fig = plt.figure(figsize=(10,10))
-    ax = fig.add_subplot(111,projection='3d')
-    ax.plot_surface(xx, yy, map,rstride=1, cstride=1, cmap='viridis',
-            linewidth=0)
-    if( utils.saving ):
-        saveGraph(utils)
-    plt.show()
+def show3Dgraph( elevation:np.array, utils, moisture:np.array ):
+    fig = plt.figure()
+    x = np.arange(len(elevation[0]))
+    y = np.arange(len(elevation))
+    (x ,y) = np.meshgrid(x,y)
 
-def noise_create(choice):
+    ax1 = fig.add_subplot(121, projection='3d')
+    ax1.plot_surface(x,y,elevation, cmap='terrain')
+    ax1.set_zlim([0, 1.2])
+    ax1.set_title("Elevation map")
+
+    ax2 = fig.add_subplot(122, projection='3d')
+    surf2 = ax2.plot_surface(x,y,moisture, cmap='Blues')
+    fig.colorbar(surf2, shrink=0.5, aspect=10)
+    ax2.set_title("Moisture map")
+
+    plt.show()
+    if utils.saving:
+        saveGraph(utils)
+
+
+def makeImage(elevation, moisture, utils):
+    rgb = [
+        assignTerrain(elevation[y][x], moisture[y][x], utils.threshold, utils.curr_mode)
+        for y in range(utils.height)
+        for x in range(utils.width) 
+    ]
+    image = Image.new("RGB", utils.shape_im)
+    image.putdata(rgb)
+    image.show()
+    if utils.saving:
+        saveImage(image, utils)
+
+def createPixel(nx, ny, utils):
+    if utils.custom:
+        return PerlinCustom(nx, ny, utils)
+    else:
+        return PerlinLib(nx, ny, utils)
+
+def PerlinLib( nx, ny, utils ):
+    return pnoise2(nx, ny, octaves=utils.octaves, persistence=utils.persistence, 
+    lacunarity=utils.lacunarity, base=utils.seed)
+
+def PerlinCustom( nx, ny, utils):
+    amplitude = 1
+    frequency = 1
+    max_value = 0
+    e = 0
+    if utils.octaves > 3:
+        octaves = 3
+    else: octaves = utils.octaves
+    for octave in range(octaves):
+        e += (noiseRandom(nx * frequency, ny * frequency, utils.permutation) * amplitude)
+        max_value += amplitude
+        amplitude *= utils.persistence
+        frequency *= 2
+    e /= max_value
+    return e
+
+def createElevation(x, y, utils):
+    nx = 2*x/utils.width - 1; ny = 2*y/utils.height - 1
+    e = createPixel(nx, ny, utils)
+    d = min( 1, (np.power(nx,2) + np.power(ny,2)) / np.sqrt(2) ) + 0.4
+    e = (e + (1-d)) / 2
+    e = ( e - utils.min_val)/(utils.max_val-utils.min_val )
+    return e
+
+def createMoisture(x, y, utils):
+    nx = 2*x/utils.width - 1; ny = 2*y/utils.height - 1
+    m = createPixel(nx, ny, utils)
+    m = ( m - utils.min_val)/(utils.max_val-utils.min_val )
+    return m
+
+def noiseCreate(choice):
     utils = var.Utils(choice)
-    im = np.zeros(shape=(utils.shape_im[0], utils.shape_im[1],3), dtype=np.uint8)
-    elevation = np.zeros(shape=(utils.shape_im[0], utils.shape_im[1]))
-    seed = random.randint(0,100)
-    seed_moisture = seed-1 if seed != 0 else 1
-    for y in range(utils.height):
-        for x in range(utils.width):
-            nx = 2*x/utils.width - 1; ny = 2*y/utils.height - 1
-            e = pnoise2(nx, ny, octaves=utils.octaves, persistence=utils.persistence, lacunarity=utils.lacunarity, base=seed)
-            m = pnoise2(nx, ny, octaves=utils.octaves, persistence=utils.persistence, lacunarity=utils.lacunarity, base=seed_moisture)
-            d = min( 1, (np.power(nx,2) + np.power(ny,2)) / math.sqrt(2) ) + 0.4
-            e = (e + (1-d)) / 2
-            e = ( e - utils.min_val)/(utils.max_val-utils.min_val)
-            m = ( m - utils.min_val)/(utils.max_val-utils.min_val)
-            elevation[y][x] = e
-            colour = color(e, m, utils.threshold, utils.curr_mode)
-            im[y][x] = colour
-    show_map(im, utils)
-    if( utils.plot3d ):
-        show_3Dgraph(elevation, utils)
+    elevation = np.zeros(shape=(utils.shape_im[0], utils.shape_im[1]), dtype=np.uint8)
+    moisture = np.zeros(shape=(utils.shape_im[0], utils.shape_im[1]), dtype=np.uint8)
+    elevation = np.array([
+        [createElevation(x,y,utils) for x in range(utils.width)] for y in range(utils.height) 
+        ])
+    moisture = np.array([
+        [createMoisture(x,y,utils) for x in range(utils.width)] for y in range(utils.height)
+        ])
+    makeImage(elevation, moisture, utils)
+    if utils.plot3d:
+        show3Dgraph(elevation, utils, moisture)

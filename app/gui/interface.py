@@ -1,13 +1,14 @@
 import tkinter as tk
 import customtkinter
 import src.generator as generator
+import time
 
 class App:
     def validate(self, input):
         if str.isdigit(input) or input == "":
             return True
         return False
-    
+
     def Generate(self):
         util_d = {
         "Mode": self.var_cb.get(),
@@ -19,8 +20,8 @@ class App:
         "Print3d": self.noise_3d.get(),
         'Custom': self.custom_noise.get(),
         'Save': self.save_images.get()
-    } 
-        generator.noise_create(util_d)
+    }
+        generator.noiseCreate(util_d)
 
     def Update_per(self, input):
         self.var_persi_str.set( round(input,2) )
