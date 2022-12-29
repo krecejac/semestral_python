@@ -1,6 +1,7 @@
 import math
 import os, os.path
 import random
+import glob
 class Utils:
     def __init__(self, info):
         """
@@ -19,6 +20,7 @@ class Utils:
         self.plot3d = info['Print3d']
         self.custom = info['Custom'] # custom noise/pnoise lib
         self.saving = info['Save'] # save images
+        self.mapping = info['Mapping']
         self.save_im = len([name for name in os.listdir('utils/images')
         if os.path.isfile('utils/images/'+ name)])                         #Counts the number of files in subdir
         self.save_graph =  len([name for name in os.listdir('utils/graphs')
@@ -61,6 +63,11 @@ class Utils:
         for i in range(256):
             self.permutation.append(self.permutation[i])
         return self.permutation
+    
+    def RefreshHtmlFile(self):
+        files = glob.glob('utils/mapping/')
+        for f in files:
+            os.remove(f)
 class Color:
     """
     RGB colors for each biom.

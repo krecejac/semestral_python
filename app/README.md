@@ -14,7 +14,7 @@ For graphical interface I used tkinter library and then the customized version c
 It was a great challenge for me to bring something new to this big projects and I hope I managed to build something creative, which i believe i did.
 It was very tedious to tweak each number so my noise generation works the intended way. All noise generation projects come down to tweaking small numbers, because each implementation of code has it's own interval of parameters that have to be tweaked individually. There is no universal number or parameter to create "nice" noise. In point I had to change numbers in the second decimal places for it to work the way I liked.
 ## How to Run the Project
-In the same directory this README.md file is located you can find the "main.py" file. Run the python3 main.py in terminal and all of the other modules will run up. The graphical interface will appear in which you can tweak individual parameters for your liking and then press the "Generate island!" and wait for the result image. The interface is very intuitive. But if you are for any reason lost the parameters work like this:
+In the same directory this README.md file is located you can find the "main.py" file. If you want to run pytest, simply write "pytest" in this folder. Run the python3 main.py in terminal and all of the other modules will run up. The graphical interface will appear in which you can tweak individual parameters for your liking and then press the "Generate island!" and wait for the result image. The interface is very intuitive. But if you are for any reason lost the parameters work like this:
 
 ## Configurations & How to Use
 Octaves - the number of levels of detail you want you perlin noise to have. Adds a new layer of detail to the surface.
@@ -30,6 +30,8 @@ Save Images - If selected, saves all of the images to the utils/images file. Can
 Custom Noise - If selected, the program uses the my custom implementation of the perlin noise.
 
 3D Plot - If selected, it will show the moisture and elevation 3d surface plots in a figure.
+
+Mapping - Cannot be selected together with 3D Plot. Runs up html file where you can zoom in and see the noise map.
 
 Generate button - After you are satisfied with the values, press the button and wait.
 

@@ -3,6 +3,8 @@ from noise import pnoise2
 from PIL import Image
 import matplotlib.pyplot as plt
 import math
+import plotly
+import plotly.graph_objects as go
 import utils.var as var
 
 class Vector2:
@@ -78,7 +80,31 @@ def saveGraph(utils):
     filename = "utils/graphs/" + "graph" + str(utils.save_graph) + ".png"
     plt.savefig(filename)
 
-def show3Dgraph( elevation:np.array, moisture:np.array, utils ):
+def makeInteractiveGraph(elevation):
+    """
+    Takes elevation map and uses plotly library to and shows it in html.
+    """
+    terrain_cmap = plt.cm.get_cmap('terrain')
+    terrain = matplotlib_to_plotly(terrain_cmap, 255)
+    plotly.offline.init_notebook_mode(connected=True)
+    fig2 = go.Figure(data=[go.Surface(colorscale=terrain,z=elevation)])
+    fig2.update_layout(title='Perlin Noise 3D Terrain')
+    html = plotly.offline.plot(fig2, filename='utils/mapping/3d-terrain-plotly.html',include_plotlyjs='cdn')
+    from IPython.core.display import HTML
+    HTML(html)
+
+def matplotlib_to_plotly(cmap, pl_entries):
+    """
+    Takes cmap of terrain and transforms it to the plotly color map.
+    """
+    h = 1.0/(pl_entries-1)
+    pl_colorscale = []
+    for k in range(pl_entries):
+        C = list(map(np.uint8, np.array(cmap(k*h)[:3])*255))
+        pl_colorscale.append([k*h, 'rgb'+str((C[0], C[1], C[2]))])
+    return pl_colorscale
+
+def show3Dgraph( elevation:np.array, moisture:np.array, utils:var.Utils ):
     """
     If the 3D plot option is switched on, we plot both graphs on a figure or and save it.
     """
@@ -277,3 +303,5 @@ def createNoise(choice):
     makeImage(elevation, moisture, utils)
     if utils.plot3d: #if the 3d Plot option is selected, the variable is set to 1
         show3Dgraph(elevation, moisture, utils)
+    if utils.mapping:
+        makeInteractiveGraph(elevation)

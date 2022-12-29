@@ -53,7 +53,8 @@ class App:
         "Lacunarity": self.slider_lacun.get(),
         "Print3d": self.noise_3d.get(),
         'Custom': self.custom_noise.get(),
-        'Save': self.save_images.get()
+        'Save': self.save_images.get(),
+        'Mapping': self.mapping.get()
     }
         generator.createNoise(util_d)
 
@@ -70,6 +71,12 @@ class App:
     def Update_lac(self, input):
         #lacunarity
         self.var_lacun_str.set( round(input,2) )
+
+    def changeSwitchMapping(self):
+        self.noise_3d.deselect()
+
+    def changeSwitch3DPlot(self):
+        self.mapping.deselect()
 
     def framesSetUp(self):
         self.root = customtkinter.CTk()
@@ -120,8 +127,8 @@ class App:
     def switchesSetUp(self):
         self.save_images = customtkinter.CTkSwitch(self.frame_switches, text="Save Images")
         self.custom_noise = customtkinter.CTkSwitch(self.frame_switches, text="Custom Noise", width=130)
-        self.noise_3d = customtkinter.CTkSwitch(self.frame_switches, text="3D noise")
-        self.mapping = customtkinter.CTkSwitch(self.frame_switches, text="Mapping", width=130)
+        self.noise_3d = customtkinter.CTkSwitch(self.frame_switches, text="3D Plot", command=self.changeSwitch3DPlot)
+        self.mapping = customtkinter.CTkSwitch(self.frame_switches, text="Mapping", width=130, command=self.changeSwitchMapping)
 
     def setAppearance(self):
         customtkinter.set_appearance_mode("dark")
