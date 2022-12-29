@@ -3,30 +3,36 @@ import os, os.path
 import random
 class Utils:
     def __init__(self, info):
+        """
+        Takes values from the graphical interface(user) and saves it.
+        Can be changed at any moment.
+        """
         self.width = info['Width']
         self.height = info['Height']
         self.shape_im = (self.height,self.width)
-        self.min_val = -math.sqrt(2) / 2
-        self.max_val = abs(self.min_val)
+        self.min_val = -math.sqrt(2) / 2#Used for normalizing values to [0,1]
+        self.max_val = abs(self.min_val)#Used for normalizing values to [0,1]
         self.octaves = info['Octaves']
-        self.threshold = 0
+        self.threshold = 0 #used later in assigning terrain
         self.persistence = info['Persistence'] #IMPORTANT
         self.lacunarity = info['Lacunarity']
         self.plot3d = info['Print3d']
-        self.custom = info['Custom']
-        self.saving = info['Save']
-        self.save_im = len([name for name in os.listdir('utils/images') if os.path.isfile('utils/images/'+ name)])
-        self.save_graph =  len([name for name in os.listdir('utils/graphs') if os.path.isfile('utils/graphs/'+ name)])
+        self.custom = info['Custom'] # custom noise/pnoise lib
+        self.saving = info['Save'] # save images
+        self.save_im = len([name for name in os.listdir('utils/images')
+        if os.path.isfile('utils/images/'+ name)])                         #Counts the number of files in subdir
+        self.save_graph =  len([name for name in os.listdir('utils/graphs')
+        if os.path.isfile('utils/graphs/'+ name)])                         #Counts the number of files in subdir
         self.curr_mode = info['Mode']
-        self.SetMode()
-        self.MakePermutation()
-    #TERRA = 0
-    #DAGOBAH = 1
-    #TATOOINE = 2
-    #HOTH = 3
-    #KASHYYYK = 4
-    #KAMINO = 5
-    #MUSTAFAR = 6
+        self.SetMode() #sets up the island Mode.
+        #TERRA = 0
+        #DAGOBAH = 1
+        #TATOOINE = 2
+        #HOTH = 3
+        #KASHYYYK = 4
+        #KAMINO = 5
+        #MUSTAFAR = 6
+        self.MakePermutation() #makes new random permutation and random.random seed.
     def SetMode(self):
         if self.curr_mode == "Terra": # NORMAL
             self.threshold = 0
@@ -40,6 +46,11 @@ class Utils:
             self.threshold = -0.1
 
     def MakePermutation(self):
+        """
+        Creates new random seed for moisture and elevation. Also makes permutation table
+        for custom perlin noise. It randomly assigns values and shuffle the list accordingly.
+        Is used later in noiseRandom function. 
+        """
         self.seed = random.randint(0,100)
         self.seed_moisture = self.seed-1 if self.seed != 0 else 1
         self.permutation = []
@@ -51,6 +62,9 @@ class Utils:
             self.permutation.append(self.permutation[i])
         return self.permutation
 class Color:
+    """
+    RGB colors for each biom.
+    """
     DEEP_OCEAN = (94, 129, 172)
     OCEAN = (115, 146, 183)
     BEACH = (235, 203, 139)

@@ -6,42 +6,55 @@ import math
 import utils.var as var
 
 def Dagobah(m):
+    #Favorizes high moisture biomes like Forest, Jungle, Land.
     if m < 0.3: return var.Color.LAND
     if m < 0.4: return var.Color.FOREST
     if m < 0.7: return var.Color.JUNGLE
     else: return var.Color.TUNDRA
 
 def Hoth(m):
+    #Favorizes high moisture/elevation biomes like Tundra, Snow
     if m < 0.3: return var.Color.LAND
     if m < 0.5: return var.Color.TUNDRA
     else: return var.Color.SNOW
 
 def Tatooine(m):
+    #Favorizes low moisture biomes like Desert, Sawanna
     if m < 0.4: return var.Color.DESERT
     if m < 0.6: return var.Color.SAWANNA
     else: return var.Color.LAND
 
 def Kashyyyk(m):
+    #Favorizes higher moisture biomes. But not much as Dagobah.
     if m < 0.1: return var.Color.LAND
     if m < 0.5: return var.Color.FOREST
     if m < 0.8: return var.Color.DENSE_FOREST
     else: return var.Color.SWAMP
 
 def Kamino(e):
+    #Favorizes water. Special mode.
     if e <= 0.5: return var.Color.DEEP_OCEAN
     if e <= 0.74: return var.Color.OCEAN
     if e <= 0.755: return var.Color.BEACH
     else: return var.Color.HIGH_MOUNTAIN
 
 def Mustafar(e):
+    #Special bonus mode. Uses lava as ocean and magma as low elevation values.
     if e <= 0.6: return var.Color.LAVA
     if e <= 0.65: return var.Color.MAGMA
     if e <= 0.74: return var.Color.BARREN
     else: return var.Color.HIGH_MOUNTAIN
 
 def assignTerrain(e, m, threshold, mode):
-    if mode == "Kamino": return Kamino(e)
-    if mode == "Mustafar": return Mustafar(e)
+    """
+    Main function used for determinign each biome. Elevation and moisture.
+    If there is set special mode, the condition changes the result fitting for the right biom.
+    In edge cases, there is the threshold method used for determining simular biomes like Hoth or Dagobah.
+    The modes are: Terra, Dagobah, Tatooine, Hoth, Kashyyyk, Kamino, Mustafar
+    """
+    if mode == "Kamino": return Kamino(e)     #Special modes of Kamino and Mustafar
+    if mode == "Mustafar": return Mustafar(e) #Special modes of Kamino and Mustafar
+    #Takes care of low elevation first
     if e <= 0.6: return var.Color.DEEP_OCEAN
     if e <= 0.65: return var.Color.OCEAN
     if e <= 0.68:
@@ -49,29 +62,36 @@ def assignTerrain(e, m, threshold, mode):
         elif mode == "Hoth": return var.Color.ICE
         else: return var.Color.SWAMP
 
+    #Next is deciding if we are in mountains. Simular for each mode.
     if e > 0.75:
         if m-threshold < 0.3: return var.Color.MOUNTAIN
         if m < 0.5: return var.Color.HIGH_MOUNTAIN
         else: return var.Color.SNOW
 
+    #The rest is vastly different.
     if e <= 0.75:
         if mode == "Dagobah": return Dagobah(m)
         if mode == "Tatooine": return Tatooine(m)
         if mode == "Hoth": return Hoth(m)
         if mode == "Kashyyyk": return Kashyyyk(m)
+        # normal mode of Terra
         if m < 0.3: return var.Color.DESERT
         if m < 0.4: return var.Color.SAWANNA
         if m < 0.5: return var.Color.LAND
         if m < 0.6: return var.Color.FOREST
         else: return var.Color.JUNGLE
 class Vector2:
-	def __init__(self, x, y):
-		self.x = x
-		self.y = y
-	def dot(self, other):
-		return self.x*other.x + self.y*other.y
+    """
+    My implementation of vector values. Has the coordinates, x and y.
+    """
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+    def dot(self, other):
+        return self.x*other.x + self.y*other.y
 
-def GetConstantVector(v):
+def getConstantVector(v):
+    #v is the value of the permutation table
 	h = v & 3
 	if(h == 0):
 		return Vector2(1.0, 1.0)
@@ -82,40 +102,46 @@ def GetConstantVector(v):
 	else:
 		return Vector2(1.0, -1.0)
 
-def Fade(t):
+def fade(t):
+    #ease function for the curve, also 
+    #as the called fade function.
 	return ((6*t - 15)*t + 10)*t*t*t
 
-def Lerp(t, a1, a2):
+def lerp(t, a1, a2):
+    #linear interpolation
 	return a1 + t*(a2-a1)
 
 def noiseRandom(x, y, permutation):
+    # Determine grid cell coordinates
 	X = math.floor(x) & 255
 	Y = math.floor(y) & 255
-
+    # Detemine interpolation weights
 	xf = x-math.floor(x)
 	yf = y-math.floor(y)
 
-	topRight = Vector2(xf-1.0, yf-1.0)
-	topLeft = Vector2(xf, yf-1.0)
-	bottomRight = Vector2(xf-1.0, yf)
-	bottomLeft = Vector2(xf, yf)
-	
+    #hash coordinates of the 4 corners of grid
 	valueTopRight = permutation[permutation[X+1]+Y+1]
 	valueTopLeft = permutation[permutation[X]+Y+1]
 	valueBottomRight = permutation[permutation[X+1]+Y]
 	valueBottomLeft = permutation[permutation[X]+Y]
 	
-	dotTopRight = topRight.dot(GetConstantVector(valueTopRight))
-	dotTopLeft = topLeft.dot(GetConstantVector(valueTopLeft))
-	dotBottomRight = bottomRight.dot(GetConstantVector(valueBottomRight))
-	dotBottomLeft = bottomLeft.dot(GetConstantVector(valueBottomLeft))
+	topRight = Vector2(xf-1.0, yf-1.0)
+	topLeft = Vector2(xf, yf-1.0)
+	bottomRight = Vector2(xf-1.0, yf)
+	bottomLeft = Vector2(xf, yf)
 	
-	u = Fade(xf)
-	v = Fade(yf)
+    #calculating dot products
+	dotTopRight = topRight.dot(getConstantVector(valueTopRight))
+	dotTopLeft = topLeft.dot(getConstantVector(valueTopLeft))
+	dotBottomRight = bottomRight.dot(getConstantVector(valueBottomRight))
+	dotBottomLeft = bottomLeft.dot(getConstantVector(valueBottomLeft))
 	
-	return Lerp(u,
-		Lerp(v, dotBottomLeft, dotTopLeft),
-		Lerp(v, dotBottomRight, dotTopRight)
+	u = fade(xf)
+	v = fade(yf)
+    #linear interpolation
+	return lerp(u,
+		lerp(v, dotBottomLeft, dotTopLeft),
+		lerp(v, dotBottomRight, dotTopRight)
 	)
 
 def saveImage( image, utils ):
@@ -132,9 +158,12 @@ def showGraph( map ):
     plt.show()
 
 def show3Dgraph( elevation:np.array, utils, moisture:np.array ):
+    """
+    If the 3D plot option is switched on, we plot both graphs on a figure or and save it.
+    """
     fig = plt.figure()
-    x = np.arange(len(elevation[0]))
-    y = np.arange(len(elevation))
+    x = np.arange(len(elevation[0])) #Both surfaces have same x,y axis, they are the same lenght
+    y = np.arange(len(elevation))    #Both surfaces have same x,y axis, they are the same lenght
     (x ,y) = np.meshgrid(x,y)
 
     ax1 = fig.add_subplot(121, projection='3d')
@@ -153,6 +182,11 @@ def show3Dgraph( elevation:np.array, utils, moisture:np.array ):
 
 
 def makeImage(elevation, moisture, utils):
+    """
+    From the elevation and moisture noises we assign correct Terrain (also depending on the mode)
+    and fill the rgb numpy array with tuples of colors. After that we show the image or and
+    save it.
+    """
     rgb = [
         assignTerrain(elevation[y][x], moisture[y][x], utils.threshold, utils.curr_mode)
         for y in range(utils.height)
@@ -164,17 +198,16 @@ def makeImage(elevation, moisture, utils):
     if utils.saving:
         saveImage(image, utils)
 
-def createPixel(nx, ny, utils):
-    if utils.custom:
-        return PerlinCustom(nx, ny, utils)
-    else:
-        return PerlinLib(nx, ny, utils)
-
-def PerlinLib( nx, ny, utils ):
+def perlinLib( nx, ny, utils ):
     return pnoise2(nx, ny, octaves=utils.octaves, persistence=utils.persistence, 
     lacunarity=utils.lacunarity, base=utils.seed)
 
-def PerlinCustom( nx, ny, utils):
+def perlinCustom( nx, ny, utils):
+    """
+    The custom implementation of perlin noise. Inspired by the perlin noise reference
+    implementation by none other than the Ken Perlin.
+    https://cs.nyu.edu/~perlin/noise/
+    """
     amplitude = 1
     frequency = 1
     max_value = 0
@@ -182,6 +215,7 @@ def PerlinCustom( nx, ny, utils):
     if utils.octaves > 3:
         octaves = 3
     else: octaves = utils.octaves
+    #fractal brownian motion Also called as octaves.
     for octave in range(octaves):
         e += (noiseRandom(nx * frequency, ny * frequency, utils.permutation) * amplitude)
         max_value += amplitude
@@ -190,30 +224,56 @@ def PerlinCustom( nx, ny, utils):
     e /= max_value
     return e
 
+def createPixel(nx, ny, utils):
+    """
+    This function chooses whether we use the pnoise library or use my custom implementation.
+    """
+    if utils.custom:
+        return perlinCustom(nx, ny, utils)
+    else:
+        return perlinLib(nx, ny, utils)
+
 def createElevation(x, y, utils):
+    """
+    Function for calculating elevation. Takes x,y coordinates in the matrix and the
+    current noise mode (pnoise library, custom).
+    It also shapes the noise to circular shape with
+    euclidian reshaping function 
+    """
     nx = 2*x/utils.width - 1; ny = 2*y/utils.height - 1
     e = createPixel(nx, ny, utils)
-    d = min( 1, (np.power(nx,2) + np.power(ny,2)) / np.sqrt(2) ) + 0.4
+    d = min( 1, (np.power(nx,2) + np.power(ny,2)) / np.sqrt(2) ) + 0.4 #euclidian shape
     e = (e + (1-d)) / 2
-    e = ( e - utils.min_val)/(utils.max_val-utils.min_val )
+    e = ( e - utils.min_val)/(utils.max_val-utils.min_val ) #normalize value to [0,1]
     return e
 
 def createMoisture(x, y, utils):
+    """
+    Function for calculating moisture. Takes x,y coordinates in the matrix and the
+    current noise mode (pnoise library, custom).
+    """
     nx = 2*x/utils.width - 1; ny = 2*y/utils.height - 1
     m = createPixel(nx, ny, utils)
-    m = ( m - utils.min_val)/(utils.max_val-utils.min_val )
+    m = ( m - utils.min_val)/(utils.max_val-utils.min_val ) #normalize value to [0,1]
     return m
 
-def noiseCreate(choice):
-    utils = var.Utils(choice)
+def createNoise(choice):
+    """
+    Main function for creating perlin noise. Takes a dictionary from user input
+    for the utilities object. The result is 2d numpy array of computed
+    elevation and moisture noises.
+    """
+    utils = var.Utils(choice) #the dictionary from input
     elevation = np.zeros(shape=(utils.shape_im[0], utils.shape_im[1]), dtype=np.uint8)
     moisture = np.zeros(shape=(utils.shape_im[0], utils.shape_im[1]), dtype=np.uint8)
     elevation = np.array([
-        [createElevation(x,y,utils) for x in range(utils.width)] for y in range(utils.height) 
+        [createElevation(x,y,utils) for x in range(utils.width)]
+        for y in range(utils.height) 
         ])
     moisture = np.array([
-        [createMoisture(x,y,utils) for x in range(utils.width)] for y in range(utils.height)
+        [createMoisture(x,y,utils) for x in range(utils.width)]
+        for y in range(utils.height)
         ])
     makeImage(elevation, moisture, utils)
-    if utils.plot3d:
+    if utils.plot3d: #if the 3d Plot option is selected, the variable is set to 1
         show3Dgraph(elevation, utils, moisture)
