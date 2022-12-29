@@ -1,7 +1,6 @@
 import tkinter as tk
 import customtkinter
 import src.generator as generator
-import time
 
 class App:
     def __init__(self):

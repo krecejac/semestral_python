@@ -5,81 +5,6 @@ import matplotlib.pyplot as plt
 import math
 import utils.var as var
 
-def Dagobah(m):
-    #Favorizes high moisture biomes like Forest, Jungle, Land.
-    if m < 0.3: return var.Color.LAND
-    if m < 0.4: return var.Color.FOREST
-    if m < 0.7: return var.Color.JUNGLE
-    else: return var.Color.TUNDRA
-
-def Hoth(m):
-    #Favorizes high moisture/elevation biomes like Tundra, Snow
-    if m < 0.3: return var.Color.LAND
-    if m < 0.5: return var.Color.TUNDRA
-    else: return var.Color.SNOW
-
-def Tatooine(m):
-    #Favorizes low moisture biomes like Desert, Sawanna
-    if m < 0.4: return var.Color.DESERT
-    if m < 0.6: return var.Color.SAWANNA
-    else: return var.Color.LAND
-
-def Kashyyyk(m):
-    #Favorizes higher moisture biomes. But not much as Dagobah.
-    if m < 0.1: return var.Color.LAND
-    if m < 0.5: return var.Color.FOREST
-    if m < 0.8: return var.Color.DENSE_FOREST
-    else: return var.Color.SWAMP
-
-def Kamino(e):
-    #Favorizes water. Special mode.
-    if e <= 0.5: return var.Color.DEEP_OCEAN
-    if e <= 0.74: return var.Color.OCEAN
-    if e <= 0.755: return var.Color.BEACH
-    else: return var.Color.HIGH_MOUNTAIN
-
-def Mustafar(e):
-    #Special bonus mode. Uses lava as ocean and magma as low elevation values.
-    if e <= 0.6: return var.Color.LAVA
-    if e <= 0.65: return var.Color.MAGMA
-    if e <= 0.74: return var.Color.BARREN
-    else: return var.Color.HIGH_MOUNTAIN
-
-def assignTerrain(e, m, threshold, mode):
-    """
-    Main function used for determinign each biome. Elevation and moisture.
-    If there is set special mode, the condition changes the result fitting for the right biom.
-    In edge cases, there is the threshold method used for determining simular biomes like Hoth or Dagobah.
-    The modes are: Terra, Dagobah, Tatooine, Hoth, Kashyyyk, Kamino, Mustafar
-    """
-    if mode == "Kamino": return Kamino(e)     #Special modes of Kamino and Mustafar
-    if mode == "Mustafar": return Mustafar(e) #Special modes of Kamino and Mustafar
-    #Takes care of low elevation first
-    if e <= 0.6: return var.Color.DEEP_OCEAN
-    if e <= 0.65: return var.Color.OCEAN
-    if e <= 0.68:
-        if m < 0.6+threshold: return var.Color.BEACH
-        elif mode == "Hoth": return var.Color.ICE
-        else: return var.Color.SWAMP
-
-    #Next is deciding if we are in mountains. Simular for each mode.
-    if e > 0.75:
-        if m-threshold < 0.3: return var.Color.MOUNTAIN
-        if m < 0.5: return var.Color.HIGH_MOUNTAIN
-        else: return var.Color.SNOW
-
-    #The rest is vastly different.
-    if e <= 0.75:
-        if mode == "Dagobah": return Dagobah(m)
-        if mode == "Tatooine": return Tatooine(m)
-        if mode == "Hoth": return Hoth(m)
-        if mode == "Kashyyyk": return Kashyyyk(m)
-        # normal mode of Terra
-        if m < 0.3: return var.Color.DESERT
-        if m < 0.4: return var.Color.SAWANNA
-        if m < 0.5: return var.Color.LAND
-        if m < 0.6: return var.Color.FOREST
-        else: return var.Color.JUNGLE
 class Vector2:
     """
     My implementation of vector values. Has the coordinates, x and y.
@@ -180,6 +105,81 @@ def show3Dgraph( elevation:np.array, utils, moisture:np.array ):
     if utils.saving:
         saveGraph(utils)
 
+def Dagobah(m):
+    #Favorizes high moisture biomes like Forest, Jungle, Land.
+    if m < 0.3: return var.Color.LAND
+    if m < 0.4: return var.Color.FOREST
+    if m < 0.7: return var.Color.JUNGLE
+    else: return var.Color.TUNDRA
+
+def Hoth(m):
+    #Favorizes high moisture/elevation biomes like Tundra, Snow
+    if m < 0.3: return var.Color.LAND
+    if m < 0.5: return var.Color.TUNDRA
+    else: return var.Color.SNOW
+
+def Tatooine(m):
+    #Favorizes low moisture biomes like Desert, Sawanna
+    if m < 0.4: return var.Color.DESERT
+    if m < 0.6: return var.Color.SAWANNA
+    else: return var.Color.LAND
+
+def Kashyyyk(m):
+    #Favorizes higher moisture biomes. But not much as Dagobah.
+    if m < 0.1: return var.Color.LAND
+    if m < 0.5: return var.Color.FOREST
+    if m < 0.8: return var.Color.DENSE_FOREST
+    else: return var.Color.SWAMP
+
+def Kamino(e):
+    #Favorizes water. Special mode.
+    if e <= 0.5: return var.Color.DEEP_OCEAN
+    if e <= 0.74: return var.Color.OCEAN
+    if e <= 0.755: return var.Color.BEACH
+    else: return var.Color.HIGH_MOUNTAIN
+
+def Mustafar(e):
+    #Special bonus mode. Uses lava as ocean and magma as low elevation values.
+    if e <= 0.6: return var.Color.LAVA
+    if e <= 0.65: return var.Color.MAGMA
+    if e <= 0.74: return var.Color.BARREN
+    else: return var.Color.HIGH_MOUNTAIN
+
+def assignTerrain(e, m, threshold, mode):
+    """
+    Main function used for determinign each biome. Elevation and moisture.
+    If there is set special mode, the condition changes the result fitting for the right biom.
+    In edge cases, there is the threshold method used for determining simular biomes like Hoth or Dagobah.
+    The modes are: Terra, Dagobah, Tatooine, Hoth, Kashyyyk, Kamino, Mustafar
+    """
+    if mode == "Kamino": return Kamino(e)     #Special modes of Kamino and Mustafar
+    if mode == "Mustafar": return Mustafar(e) #Special modes of Kamino and Mustafar
+    #Takes care of low elevation first
+    if e <= 0.6: return var.Color.DEEP_OCEAN
+    if e <= 0.65: return var.Color.OCEAN
+    if e <= 0.68:
+        if m < 0.6+threshold: return var.Color.BEACH #it's not impossible for Hoth to have beach
+        elif mode == "Hoth": return var.Color.ICE
+        else: return var.Color.SWAMP
+
+    #Next is deciding if we are in mountains. Simular for each mode. Tatooine doesnt have much snow.
+    if e > 0.75:
+        if m-threshold < 0.3: return var.Color.MOUNTAIN #it's not impossible for Tatooine to have snow
+        if m < 0.5: return var.Color.HIGH_MOUNTAIN
+        else: return var.Color.SNOW
+
+    #The rest is vastly different.
+    if e <= 0.75:
+        if mode == "Dagobah": return Dagobah(m)
+        if mode == "Tatooine": return Tatooine(m)
+        if mode == "Hoth": return Hoth(m)
+        if mode == "Kashyyyk": return Kashyyyk(m)
+        # normal mode of Terra
+        if m < 0.3: return var.Color.DESERT
+        if m < 0.4: return var.Color.SAWANNA
+        if m < 0.5: return var.Color.LAND
+        if m < 0.6: return var.Color.FOREST
+        else: return var.Color.JUNGLE
 
 def makeImage(elevation, moisture, utils):
     """
