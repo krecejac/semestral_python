@@ -37,6 +37,7 @@ Generate button - After you are satisfied with the values, press the button and 
 I used many interesting science works for this topic,
 here are the ones I used:
 https://en.wikipedia.org/wiki/Perlin_noise
+https://weber.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
 https://core.ac.uk/download/pdf/34480918.pdf
 huttar.net/lars-kathy/graphics/perlin-noise/perlin-noise.html
 https://mzucker.github.io/html/perlin-noise-math-faq.html

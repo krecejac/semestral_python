@@ -78,14 +78,12 @@ def saveGraph(utils):
     filename = "utils/graphs/" + "graph" + str(utils.save_graph) + ".png"
     plt.savefig(filename)
 
-def showGraph( map ):
-    plt.imshow(map)
-    plt.show()
-
-def show3Dgraph( elevation:np.array, utils, moisture:np.array ):
+def show3Dgraph( elevation:np.array, moisture:np.array, utils ):
     """
     If the 3D plot option is switched on, we plot both graphs on a figure or and save it.
     """
+    if elevation.shape != utils.shape_im or moisture.shape != utils.shape_im:
+        raise ValueError("The generated noise is not in default width or height")
     fig = plt.figure()
     x = np.arange(len(elevation[0])) #Both surfaces have same x,y axis, they are the same lenght
     y = np.arange(len(elevation))    #Both surfaces have same x,y axis, they are the same lenght
@@ -181,12 +179,14 @@ def assignTerrain(e, m, threshold, mode):
         if m < 0.6: return var.Color.FOREST
         else: return var.Color.JUNGLE
 
-def makeImage(elevation, moisture, utils):
+def makeImage(elevation:np.array, moisture:np.array, utils:var.Utils):
     """
     From the elevation and moisture noises we assign correct Terrain (also depending on the mode)
     and fill the rgb numpy array with tuples of colors. After that we show the image or and
     save it.
     """
+    if elevation.shape != utils.shape_im or moisture.shape != utils.shape_im:
+        raise ValueError("The generated noise is not in default width or height")
     rgb = [
         assignTerrain(elevation[y][x], moisture[y][x], utils.threshold, utils.curr_mode)
         for y in range(utils.height)
@@ -198,11 +198,7 @@ def makeImage(elevation, moisture, utils):
     if utils.saving:
         saveImage(image, utils)
 
-def perlinLib( nx, ny, utils ):
-    return pnoise2(nx, ny, octaves=utils.octaves, persistence=utils.persistence, 
-    lacunarity=utils.lacunarity, base=utils.seed)
-
-def perlinCustom( nx, ny, utils):
+def perlinCustom(nx, ny, utils:var.Utils ):
     """
     The custom implementation of perlin noise. Inspired by the perlin noise reference
     implementation by none other than the Ken Perlin.
@@ -215,7 +211,7 @@ def perlinCustom( nx, ny, utils):
     if utils.octaves > 3:
         octaves = 3
     else: octaves = utils.octaves
-    #fractal brownian motion Also called as octaves.
+    #fractal brownian motion uses octaves.
     for octave in range(octaves):
         e += (noiseRandom(nx * frequency, ny * frequency, utils.permutation) * amplitude)
         max_value += amplitude
@@ -224,38 +220,46 @@ def perlinCustom( nx, ny, utils):
     e /= max_value
     return e
 
-def createPixel(nx, ny, utils):
+def perlinLib( nx, ny, utils:var.Utils ):
+    return pnoise2(nx, ny, octaves=utils.octaves, persistence=utils.persistence, 
+    lacunarity=utils.lacunarity, base=utils.seed)
+
+def createPixel(ny, utils:var.Utils, row) -> np.array:
     """
     This function chooses whether we use the pnoise library or use my custom implementation.
     """
     if utils.custom:
-        return perlinCustom(nx, ny, utils)
+        return np.array([perlinCustom(nx, ny, utils) for nx in row])
+        #return perlinCustom(nx, ny, utils)
     else:
-        return perlinLib(nx, ny, utils)
+        return np.array([perlinLib(nx, ny, utils) for nx in row])
+        #return perlinLib(nx, ny, utils)
 
-def createElevation(x, y, utils):
+def createElevation(y, utils:var.Utils) -> np.array:
     """
     Function for calculating elevation. Takes x,y coordinates in the matrix and the
     current noise mode (pnoise library, custom).
     It also shapes the noise to circular shape with
     euclidian reshaping function 
     """
-    nx = 2*x/utils.width - 1; ny = 2*y/utils.height - 1
-    e = createPixel(nx, ny, utils)
-    d = min( 1, (np.power(nx,2) + np.power(ny,2)) / np.sqrt(2) ) + 0.4 #euclidian shape
-    e = (e + (1-d)) / 2
-    e = ( e - utils.min_val)/(utils.max_val-utils.min_val ) #normalize value to [0,1]
-    return e
+    ny = 2*y/utils.height - 1
+    row = np.array([ (2*x/utils.width - 1) for x in range(utils.width)])
+    d = np.array([((min( 1, (np.power(nx,2) + np.power(ny,2)) / np.sqrt(2) ) + 0.4)) for nx in row ])
+    row_e = createPixel(ny,utils,row)
+    row_e = (row_e + ( np.negative(d) + 1)) / 2
+    row_e = ( row_e - utils.min_val )/(utils.max_val-utils.min_val)
+    return row_e
 
-def createMoisture(x, y, utils):
+def createMoisture(y, utils:var.Utils) -> np.array:
     """
     Function for calculating moisture. Takes x,y coordinates in the matrix and the
     current noise mode (pnoise library, custom).
     """
-    nx = 2*x/utils.width - 1; ny = 2*y/utils.height - 1
-    m = createPixel(nx, ny, utils)
-    m = ( m - utils.min_val)/(utils.max_val-utils.min_val ) #normalize value to [0,1]
-    return m
+    ny = 2*y/utils.height - 1
+    row = np.array([ (2*x/utils.width - 1) for x in range(utils.width)])
+    row_m = createPixel(ny,utils,row)
+    row_m = ( row_m - utils.min_val )/(utils.max_val-utils.min_val)
+    return row_m
 
 def createNoise(choice):
     """
@@ -264,16 +268,12 @@ def createNoise(choice):
     elevation and moisture noises.
     """
     utils = var.Utils(choice) #the dictionary from input
-    elevation = np.zeros(shape=(utils.shape_im[0], utils.shape_im[1]), dtype=np.uint8)
-    moisture = np.zeros(shape=(utils.shape_im[0], utils.shape_im[1]), dtype=np.uint8)
     elevation = np.array([
-        [createElevation(x,y,utils) for x in range(utils.width)]
-        for y in range(utils.height) 
+        (createElevation(y, utils)) for y in range(utils.height)
         ])
     moisture = np.array([
-        [createMoisture(x,y,utils) for x in range(utils.width)]
-        for y in range(utils.height)
+        (createMoisture(y, utils)) for y in range(utils.height)
         ])
     makeImage(elevation, moisture, utils)
     if utils.plot3d: #if the 3d Plot option is selected, the variable is set to 1
-        show3Dgraph(elevation, utils, moisture)
+        show3Dgraph(elevation, moisture, utils)
