@@ -78,6 +78,7 @@ def saveImage( image, utils ):
 
 def saveGraph(utils):
     filename = "utils/graphs/" + "graph" + str(utils.save_graph) + ".png"
+    utils.save_graph += 1
     plt.savefig(filename)
 
 def makeInteractiveGraph(elevation):
@@ -125,9 +126,9 @@ def show3Dgraph( elevation:np.array, moisture:np.array, utils:var.Utils ):
     fig.colorbar(surf2, shrink=0.5, aspect=10)
     ax2.set_title("Moisture map")
 
-    plt.show()
     if utils.saving:
         saveGraph(utils)
+    plt.show()
 
 def Dagobah(m):
     #Favorizes high moisture biomes like Forest, Jungle, Land.
@@ -144,7 +145,7 @@ def Hoth(m):
 
 def Tatooine(m):
     #Favorizes low moisture biomes like Desert, Sawanna
-    if m < 0.4: return var.Color.DESERT
+    if m < 0.45: return var.Color.DESERT
     if m < 0.6: return var.Color.SAWANNA
     else: return var.Color.LAND
 

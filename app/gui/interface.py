@@ -72,6 +72,10 @@ class App:
         #lacunarity
         self.var_lacun_str.set( round(input,2) )
 
+    def Update_oct(self, input):
+        #octaves
+        self.var_octav.set( int(input) )
+
     def changeSwitchMapping(self):
         self.noise_3d.deselect()
 
@@ -116,7 +120,7 @@ class App:
     def sliderSetUp(self):
         self.vcmd = (self.root.register(self.validate)) #command handler for the entries
         self.slider_octav = customtkinter.CTkSlider(self.frame, from_=1, to=10, orientation=tk.HORIZONTAL,
-                                                width=200, variable=self.var_octav)
+                                                width=200, variable=self.var_octav, command=self.Update_oct)
         self.slider_persi = customtkinter.CTkSlider(self.frame, from_=0.1, to=1.0, number_of_steps=9,
                                                 orientation=tk.HORIZONTAL, width=200,
                                                 variable=self.var_persi, command=self.Update_per)
