@@ -27,6 +27,7 @@ class Utils:
         if os.path.isfile('utils/graphs/'+ name)])                         #Counts the number of files in subdir
         self.curr_mode = info['Mode']
         self.SetMode() #sets up the island Mode.
+        self.RefreshHtmlFile()
         #TERRA = 0
         #DAGOBAH = 1
         #TATOOINE = 2
@@ -65,7 +66,7 @@ class Utils:
         return self.permutation
     
     def RefreshHtmlFile(self):
-        files = glob.glob('utils/mapping/')
+        files = glob.glob('utils/mapping/*')
         for f in files:
             os.remove(f)
 class Color:
