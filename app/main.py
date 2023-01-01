@@ -1,3 +1,6 @@
+"""
+main module
+"""
 from gui.interface import App
 
 if __name__ == "__main__":

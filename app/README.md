@@ -28,7 +28,7 @@ Lacunarity - number that determines how much detail is added or removed at each 
 
 Mode - There is 7 different island modes. Some favorize forest others lava or deserts. Try it out and see your favourite one.
 
-Width, Height - The resolution of the randomly generated image.  
+Width, Height - The resolution of the randomly generated image. It is reccomended to have square dimensions, otherwise the euclidian function in the noise generation will warp the land into a weird shape!!! There is a check for that, so the dimensions are always equal.
 
 Save Images - If selected, saves all of the images to the utils/images file. Can save also 3d plots to the utils/graphs file.
 
@@ -36,7 +36,7 @@ Custom Noise - If selected, the program uses the my custom implementation of the
 
 3D Plot - If selected, it will show the moisture and elevation 3d surface plots in a figure.
 
-Mapping - Cannot be selected together with 3D Plot. Runs up html file where you can zoom in and see the noise map.
+Mapping - Cannot be selected together with 3D Plot. Runs up html file where you can zoom in and see the noise map. You need to be connected on the internet so the html file can be displayed.
 
 Generate button - After you are satisfied with the values, press the button and wait.
 
